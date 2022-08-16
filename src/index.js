@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const { v4: uuidV4 } = require("uuid");
 
 // const { v4: uuidv4 } = require('uuid');
 
@@ -22,8 +23,19 @@ function checksExistsUserAccount(request, response, next) {
   return next();
 }
 
-app.post("/users", (request, response) => {
+app.post("/users", checksExistsUserAccount, (request, response) => {
   const { name, username } = request.body;
+
+  const newUser = {
+    id: uuidV4(),
+    name,
+    username,
+    todos: [],
+  };
+
+  users.push(newUser);
+
+  return response.status(201).json(newUser);
 });
 
 app.get("/todos", checksExistsUserAccount, (request, response) => {
