@@ -91,7 +91,21 @@ app.put("/todos/:id", (request, response) => {
 });
 
 app.patch("/todos/:id/done", (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((item) => item.username === username);
+
+  const todoItem = user.todos.find((item) => item.id === id);
+  const newTodoItem = {
+    ...todoItem,
+    done: true,
+  };
+
+  user.todos = user.todos.filter((item) => item.id !== id);
+  user.todos.push(newTodoItem);
+
+  return response.status(200).send(newTodoItem);
 });
 
 app.delete("/todos/:id", (request, response) => {
