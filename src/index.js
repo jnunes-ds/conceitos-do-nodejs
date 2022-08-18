@@ -50,7 +50,7 @@ app.get("/todos", (request, response) => {
 
   const user = users.find((item) => item.username === username);
 
-  return response.status(200).json({ todos: user.todos });
+  return response.status(200).json(user.todos);
 });
 
 app.post("/todos", (request, response) => {
@@ -69,7 +69,7 @@ app.post("/todos", (request, response) => {
 
   user.todos.push(newTodo);
 
-  return response.status(200).send(newTodo).json(newTodo);
+  return response.status(201).send(newTodo).json(newTodo);
 });
 
 app.put("/todos/:id", (request, response) => {
@@ -78,16 +78,17 @@ app.put("/todos/:id", (request, response) => {
   const { id } = request.params;
 
   const user = users.find((item) => item.username === username);
-  const todoItem = user.todos.find((item) => item.id === id);
-  const newItem = {
-    ...todoItem,
-    title: title ?? todoItem.title,
-    deadline: deadline ?? todoItem.deadline,
-  };
-  user.todos = user.todos.filter((item) => item.id !== id);
-  user.todos.push(newItem);
+  const todo = user.todos.find((item) => item.id === id);
 
-  return response.status(200).send(JSON.stringify(newItem));
+  if (!todo)
+    return response.status(404).json({ error: "ToDo does not exists!" });
+
+  todo.title = title;
+  todo.deadline = new Date(deadline);
+  // user.todos = user.todos.filter((item) => item.id !== id);
+  // user.todos.push(newItem);
+
+  return response.status(200).send(todo);
 });
 
 app.patch("/todos/:id/done", (request, response) => {
@@ -96,9 +97,13 @@ app.patch("/todos/:id/done", (request, response) => {
 
   const user = users.find((item) => item.username === username);
 
-  const todoItem = user.todos.find((item) => item.id === id);
+  const todo = user.todos.find((item) => item.id === id);
+
+  if (!todo)
+    return response.status(404).json({ error: "ToDo does not exists!" });
+
   const newTodoItem = {
-    ...todoItem,
+    ...todo,
     done: true,
   };
 
@@ -113,10 +118,14 @@ app.delete("/todos/:id", (request, response) => {
   const { id } = request.params;
 
   const user = users.find((item) => item.username === username);
+  const todo = user.todos.find((item) => item.id === id);
+
+  if (!todo)
+    return response.status(404).json({ error: "ToDo does not exists!" });
 
   user.todos = user.todos.filter((item) => item.id !== id);
 
-  return response.status(200).send(user.todos);
+  return response.status(204).send(user.todos);
 });
 
 module.exports = app;
