@@ -43,7 +43,9 @@ app.post("/users", (request, response) => {
   return response.status(201).json(newUser);
 });
 
-app.get("/todos", checksExistsUserAccount, (request, response) => {
+app.use(checksExistsUserAccount);
+
+app.get("/todos", (request, response) => {
   const { username } = request.headers;
 
   const user = users.find((item) => item.username === username);
@@ -51,7 +53,7 @@ app.get("/todos", checksExistsUserAccount, (request, response) => {
   return response.status(200).json({ todos: user.todos });
 });
 
-app.post("/todos", checksExistsUserAccount, (request, response) => {
+app.post("/todos", (request, response) => {
   const { username } = request.headers;
   const { title, deadline } = request.body;
 
@@ -61,7 +63,7 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
     id: uuidV4(),
     title,
     done: false,
-    deadline,
+    deadline: new Date(deadline),
     created_at: new Date(),
   };
 
@@ -70,15 +72,29 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
   return response.status(200).send(newTodo).json(newTodo);
 });
 
-app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
+app.put("/todos/:id", (request, response) => {
+  const { username } = request.headers;
+  const { title, deadline } = request.body;
+  const { id } = request.params;
+
+  const user = users.find((item) => item.username === username);
+  const todoItem = user.todos.find((item) => item.id === id);
+  const newItem = {
+    ...todoItem,
+    title: title ?? todoItem.title,
+    deadline: deadline ?? todoItem.deadline,
+  };
+  user.todos = user.todos.filter((item) => item.id !== id);
+  user.todos.push(newItem);
+
+  return response.status(200).send(JSON.stringify(newItem));
+});
+
+app.patch("/todos/:id/done", (request, response) => {
   // Complete aqui
 });
 
-app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
-  // Complete aqui
-});
-
-app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
+app.delete("/todos/:id", (request, response) => {
   // Complete aqui
 });
 
