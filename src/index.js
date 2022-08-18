@@ -109,7 +109,14 @@ app.patch("/todos/:id/done", (request, response) => {
 });
 
 app.delete("/todos/:id", (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((item) => item.username === username);
+
+  user.todos = user.todos.filter((item) => item.id !== id);
+
+  return response.status(200).send(user.todos);
 });
 
 module.exports = app;
