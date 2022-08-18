@@ -39,7 +39,11 @@ app.post("/users", checksExistsUserAccount, (request, response) => {
 });
 
 app.get("/todos", checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find((item) => item.username === username);
+
+  return response.status(200).json({ todos: user.todos });
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
